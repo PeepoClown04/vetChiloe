@@ -23,6 +23,15 @@
   margin-top: 22px;
 }
 
+.formulario-paciente fieldset {
+  display: contents;
+}
+
+.formulario-paciente button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
 .campo {
   display: flex;
   flex-direction: column;

@@ -1,7 +1,5 @@
-// La API es la única fuente de datos: ninguna función de aquí resuelve
-// información por su cuenta, solo transporta la petición HTTP y normaliza
-// los errores del servidor.
-const BASE_URL = 'http://localhost:3000/api/pacientes';
+const API_ORIGIN = (import.meta.env.VITE_API_URL || 'http://localhost:3000').trim().replace(/\/+$/, '');
+const BASE_URL = `${API_ORIGIN}/api/pacientes`;
 
 const pedir = async (url, opciones) => {
   const respuesta = await fetch(url, opciones);

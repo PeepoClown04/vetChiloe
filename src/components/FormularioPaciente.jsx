@@ -21,13 +21,15 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
   const [peso, setPeso] = useState('');
   const [dueno, setDueno] = useState('');
   const [telefono, setTelefono] = useState('');
-  const [numeroAtencion, setNumeroAtencion] = useState('');
   const [edad, setEdad] = useState('');
   const [ultimaVisita, setUltimaVisita] = useState('');
   const [imagen, setImagen] = useState(null);
   const [nombreImagen, setNombreImagen] = useState('');
 
   const [errores, setErrores] = useState({});
+  const [guardando, setGuardando] = useState(false);
+  const [errorGuardado, setErrorGuardado] = useState('');
+  const envioEnCurso = useRef(false);
 
   const inputArchivoRef = useRef(null);
 
@@ -37,7 +39,6 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
     setPeso('');
     setDueno('');
     setTelefono('');
-    setNumeroAtencion('');
     setEdad('');
     setUltimaVisita('');
     setImagen(null);
@@ -100,8 +101,9 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
     if (inputArchivoRef.current) inputArchivoRef.current.value = '';
   };
 
-  const manejarSubmit = (evento) => {
+  const manejarSubmit = async (evento) => {
     evento.preventDefault();
+    if (envioEnCurso.current) return;
 
     const erroresEncontrados = validarPaciente({
       nombre,
@@ -109,7 +111,6 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
       peso,
       dueno,
       telefono,
-      numero_atencion: numeroAtencion,
       edad,
       ultima_visita: ultimaVisita,
     });
@@ -119,20 +120,23 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
       return;
     }
 
-    onAgregarPacientes({
-      nombre: nombre.trim(),
-      especie,
-      peso: Number(peso),
-      dueno: normalizarRut(dueno),
-      telefono: normalizarTelefono(telefono),
-      numero_atencion: numeroAtencion.trim().toUpperCase(),
-      edad: Number(edad),
-      ultima_visita: ultimaVisita,
-      imagen: imagen ?? null,
-    });
-
-    limpiarFormulario();
-    onCerrar?.();
+    envioEnCurso.current = true;
+    setGuardando(true);
+    setErrorGuardado('');
+    try {
+      await onAgregarPacientes({
+        nombre: nombre.trim(), especie, peso: Number(peso),
+        dueno: normalizarRut(dueno), telefono: normalizarTelefono(telefono),
+        edad: Number(edad), ultima_visita: ultimaVisita, imagen: imagen ?? null,
+      });
+      limpiarFormulario();
+      onCerrar?.();
+    } catch (error) {
+      setErrorGuardado(error.message || 'No se pudo registrar el paciente. Intenta nuevamente.');
+    } finally {
+      envioEnCurso.current = false;
+      setGuardando(false);
+    }
   };
 
   const propsCampo = (campo, extra = '') => ({
@@ -154,7 +158,8 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
     <section className="formulario-paciente" id="formulario-paciente">
       <h2 id="titulo-modal">Registro de Nuevo Paciente</h2>
 
-      <form onSubmit={manejarSubmit} autoComplete="off" noValidate>
+      <form onSubmit={manejarSubmit} autoComplete="off" noValidate aria-busy={guardando}>
+        <fieldset disabled={guardando}>
         <div {...propsCampo('nombre')}>
           <label htmlFor="nombre">Nombre del Paciente</label>
           <input
@@ -221,23 +226,6 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
             required
           />
           {mensajeError('peso')}
-        </div>
-
-        <div {...propsCampo('numero_atencion')}>
-          <label htmlFor="numero_atencion">Número de Atención</label>
-          <input
-            type="text"
-            id="numero_atencion"
-            name="numero_atencion"
-            value={numeroAtencion}
-            onChange={cambiar(setNumeroAtencion, 'numero_atencion')}
-            placeholder="Ej: 2026-A1"
-            pattern={'\\d{4}-[A-Za-z]\\d{1,3}'}
-            title="Año de 4 dígitos, guion, letra y 1 a 3 números. Ej: 2026-A1"
-            maxLength={8}
-            required
-          />
-          {mensajeError('numero_atencion')}
         </div>
 
         <div {...propsCampo('dueno')}>
@@ -308,7 +296,11 @@ function FormularioPaciente({ onAgregarPacientes, onCerrar }) {
           {mensajeError('imagen')}
         </div>
 
-        <button type="submit">Registrar Paciente</button>
+        <button type="submit" disabled={guardando}>
+          {guardando ? 'Guardando…' : 'Registrar Paciente'}
+        </button>
+        </fieldset>
+        {errorGuardado && <p className="mensaje-error" role="alert">{errorGuardado}</p>}
       </form>
     </section>
   );
