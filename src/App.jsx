@@ -47,13 +47,10 @@ function App() {
   const cerrarFormulario = () => setMostrarFormulario(false);
   const cerrarCarnet = () => setPacienteCarnet(null);
 
-  // Manejador exigido por TablaPacientes: recibe el paciente de la fila y
-  // abre su carnet reutilizando la FlipCard de la sección anterior.
   const onVerFicha = (paciente) => setPacienteCarnet(paciente);
 
   const hayModalAbierto = mostrarFormulario || pacienteCarnet !== null;
 
-  // Cierre controlado con la tecla Escape y bloqueo del scroll de fondo.
   useEffect(() => {
     if (!hayModalAbierto) return undefined;
 
@@ -164,7 +161,6 @@ function App() {
 
             <h2 id="titulo-carnet">Carnet de {pacienteCarnet.nombre}</h2>
 
-            {/* key fuerza el remontaje para que el carnet abra en el reverso. */}
             <div className="carnet-visual" key={pacienteCarnet.id}>
               <TarjetaPaciente paciente={pacienteCarnet} mostrarReverso />
             </div>

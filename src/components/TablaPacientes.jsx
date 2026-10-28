@@ -1,6 +1,5 @@
 import './TablaPacientes.css';
 
-// Clases de color (badges) según la especie del paciente.
 const CLASES_ESPECIE = {
   Felino: 'badge--felino',
   Canino: 'badge--canino',
@@ -23,8 +22,6 @@ function TablaPacientes({ pacientes = [], onVerFicha }) {
   }
 
   return (
-    // Contenedor con desbordamiento horizontal controlado: en pantallas
-    // angostas la tabla se desplaza en vez de romper el layout.
     <div
       className="tabla-contenedor"
       role="region"
