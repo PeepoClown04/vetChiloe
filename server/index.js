@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
+import rutasFunciones from './routes/funciones.routes.js';
 import rutasPacientes from './routes/pacientes.js';
 
 const PUERTO = process.env.PORT ?? 3000;
@@ -17,6 +18,7 @@ app.use((req, res, next) =>
   METODOS_CON_BODY.includes(req.method) ? json(req, res, next) : next(),
 );
 
+app.use('/api/pacientes', rutasFunciones);
 app.use('/api/pacientes', rutasPacientes);
 
 app.use((req, res) => {
