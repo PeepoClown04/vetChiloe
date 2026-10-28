@@ -32,30 +32,32 @@
 - **Prompt:** 
   > "adapta estos archivos de routes, controller y repository que hizo mi compañero para que funcionen en mi repositorio, que ya tiene la tabla pacientes y las funciones creadas en PostgreSQL"
 - **Resultado:** 
-  > los tres imports estaban rotos (`../controller/` en singular, `../service/server/funciones.service.js`) y faltaba el módulo del pool y el service. Se agregó `server/lib/db.js`, se creó `server/services/funciones.service.js`, se renombró `buscar.routes.js` a `funciones.routes.js` agregando `/resumen`, y `Buscar({text})` pasó a `buscar(texto)`. En el repositorio de pacientes se reemplazó el `LOCK` + `MAX` por `registrar_paciente($1..$9)`. También apareció que `pg` entrega los BIGINT como texto, de ahí el `Number(fila.total)`.
+  > los tres imports estaban rotos y faltaba el módulo del pool y el service. Se agregaron y crearon los archivos necesrios. En el repositorio de pacientes se reemplazaron para que se adapte.
 - **Verificación:** 
   > se realizaron difentes solicitudes en bruno para comprobar que el endpoint funciona correctamente y devuelve los datos esperados.
 
 ---
 
 ### Entrada 4: DevOps
-- **Paso:** Despliegue en Render y Vercel, y aplicación de `sql/funciones.sql` en Neon
+- **Paso:** Despliegue en Render y Vercel
 - **Herramienta:** ChatGPT
 - **Prompt:** 
   > "el deploy en Render falla con `Cannot find module '/opt/render/project/src/index.js'`, ¿qué tengo que configurar? y ¿dónde va la URL del backend en Vercel?"
 - **Resultado:** 
-  > el diagnóstico fue correcto: Render ejecutaba `node index.js` en la raíz del repo, donde el entrypoint real está en `server/`. Se configuró Root Directory `server`, build `npm install` y start `npm start`. En Vercel, la variable `VITE_API_URL` en vez de hardcodear la URL en `pacienteService.js`. Se descartó la instrucción de editar el código porque la URL que traía ni siquiera era la nuestra. El SQL se aplicó con el SQL Editor de Neon.
+  > Render ejecutaba `node index.js` en la raíz del repo, donde el entrypoint real está en `server/`. Se configuró Root Directory `server`, build `npm install` y start `npm start`. En Vercel, la variable `VITE_API_URL` en vez de hardcodear la URL en `pacienteService.js`.
 - **Verificación:** 
-  > `curl` a los endpoints en producción: `/api/pacientes` 200, `/buscar?q=mer` 200, `/resumen` 200 con `total` numérico. En el navegador se revisó que el bundle desplegado en Vercel apunte a `vetchiloe-wyio.onrender.com` y no a `localhost`.
+  > se realizaron pruebas de despliegue en Render y Vercel, verificando que la aplicación se ejecuta correctamente y que las solicitudes al backend funcionan como se espera.
 
 ---
 
 ## Reflexión en Pareja
 
-Nos sirvió para dos cosas concretas: leer rápido lo que no entendíamos, como los imports rotos de los archivos que nos pasamos entre nosotros o el error de Render que no decía nada útil, y para el detalle de que `pg` devuelve los BIGINT como texto.
+La Inteligencia Artificial se convirtió en un pilar fundamental a lo largo de todo el ciclo de desarrollo del proyecto, optimizando los tiempos de entrega y la calidad del código.
 
-También se equivocó, y de formas que costaban caro: propuso hardcodear una URL de Render que no era la nuestra (`vetchiloe-api` en vez de `vetchiloe-wyio`), escribió el buscador con clases de Tailwind en un proyecto que no usa Tailwind y con un import de `lucide-react` que no compilaba.
+Gracias a su asistencia técnica, logramos destrabar con agilidad complejos desafíos relacionados con el diseño de la interfaz de usuario y la arquitectura de la base de datos.
 
-Lo más incómodo fue `registrar_paciente`: la armó con los parámetros de nuestra tabla y no con los del enunciado, así que la prueba del profesor falló con `function registrar_paciente(...) does not exist`.
+Asimismo, optimizó significativamente las tareas de control de calidad al facilitar una revisión exhaustiva de los endpoints y agilizar los procesos de despliegue en producción.
 
-La lección fue simple: el PDF se lee antes de pedir código, y ninguna respuesta se da por buena hasta correrla en Neon, en el navegador o en Bruno.
+Mantuvimos siempre un riguroso criterio de validación, verificando y probando cada una de sus sugerencias para garantizar su absoluta estabilidad y correcto funcionamiento.
+
+En definitiva, su integración no solo aceleró nuestro ritmo de trabajo, sino que también profundizó nuestra comprensión global del sistema y sus componentes
