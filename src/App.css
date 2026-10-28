@@ -344,3 +344,10 @@
   color: var(--text);
   font-variant-numeric: tabular-nums;
 }
+
+.resumen-especies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 24px 12px;
+}

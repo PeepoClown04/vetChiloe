@@ -6,8 +6,10 @@ import TarjetaPaciente from './components/TarjetaPaciente';
 import FormularioPaciente from './components/FormularioPaciente';
 import {
   obtenerPacientes,
+  obtenerResumen,
   registrarPaciente,
 } from './services/pacienteService';
+import { claseBadge } from './utils/especies';
 
 function App() {
   const [pacientes, setPacientes] = useState([]);
@@ -16,6 +18,8 @@ function App() {
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [pacienteCarnet, setPacienteCarnet] = useState(null);
   const [busqueda, setBusqueda] = useState('');
+  const [resumen, setResumen] = useState([]);
+  const [refrescarResumen, setRefrescarResumen] = useState(0);
 
   // `activo` descarta la respuesta si el componente se desmonta antes
   // (StrictMode monta dos veces en desarrollo).
@@ -41,6 +45,22 @@ function App() {
     };
   }, []);
 
+  useEffect(() => {
+    let activo = true;
+
+    obtenerResumen()
+      .then((datos) => {
+        if (activo) setResumen(datos);
+      })
+      .catch(() => {
+        if (activo) setResumen([]);
+      });
+
+    return () => {
+      activo = false;
+    };
+  }, [refrescarResumen]);
+
   const pacientesFiltrados = useMemo(() => {
     const termino = busqueda.trim().toLowerCase();
 
@@ -56,6 +76,7 @@ function App() {
   const agregarPacientes = async (datosPaciente) => {
     const pacienteRegistrado = await registrarPaciente(datosPaciente);
     setPacientes((previos) => [...previos, pacienteRegistrado]);
+    setRefrescarResumen((previo) => previo + 1);
   };
 
   const cerrarFormulario = () => setMostrarFormulario(false);
@@ -107,6 +128,16 @@ function App() {
 
         {!cargando && !error && (
           <>
+            {resumen.length > 0 && (
+              <div className="resumen-especies" aria-label="Pacientes por especie">
+                {resumen.map((fila) => (
+                  <span key={fila.especie} className={claseBadge(fila.especie)}>
+                    {fila.especie}: {fila.total}
+                  </span>
+                ))}
+              </div>
+            )}
+
             <p className="contador-pacientes" aria-live="polite">
               {pacientesFiltrados.length} de {pacientes.length} pacientes
             </p>

@@ -1,15 +1,5 @@
+import { claseBadge } from '../utils/especies';
 import './TablaPacientes.css';
-
-const CLASES_ESPECIE = {
-  Felino: 'badge--felino',
-  Canino: 'badge--canino',
-  Ave: 'badge--ave',
-  Roedor: 'badge--roedor',
-  Reptil: 'badge--reptil',
-};
-
-const claseBadge = (especie) =>
-  `badge ${CLASES_ESPECIE[especie] ?? 'badge--otro'}`;
 
 function TablaPacientes({ pacientes = [], onVerFicha }) {
   if (pacientes.length === 0) {

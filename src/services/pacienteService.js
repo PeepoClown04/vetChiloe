@@ -16,6 +16,10 @@ export function obtenerPacientes() {
   return pedir(BASE_URL);
 }
 
+export function obtenerResumen() {
+  return pedir(`${BASE_URL}/resumen`);
+}
+
 export function registrarPaciente(paciente) {
   return pedir(BASE_URL, {
     method: 'POST',
