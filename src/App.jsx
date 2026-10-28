@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './App.css';
+import BuscadorPaciente from './components/BuscadorPaciente';
 import TablaPacientes from './components/TablaPacientes';
 import TarjetaPaciente from './components/TarjetaPaciente';
 import FormularioPaciente from './components/FormularioPaciente';
@@ -14,6 +15,7 @@ function App() {
   const [error, setError] = useState(null);
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [pacienteCarnet, setPacienteCarnet] = useState(null);
+  const [busqueda, setBusqueda] = useState('');
 
   // `activo` descarta la respuesta si el componente se desmonta antes
   // (StrictMode monta dos veces en desarrollo).
@@ -38,6 +40,18 @@ function App() {
       activo = false;
     };
   }, []);
+
+  const pacientesFiltrados = useMemo(() => {
+    const termino = busqueda.trim().toLowerCase();
+
+    if (!termino) return pacientes;
+
+    return pacientes.filter((pacienteIterado) => (
+      `${pacienteIterado.nombre ?? ''} ${pacienteIterado.especie ?? ''}`
+        .toLowerCase()
+        .includes(termino)
+    ));
+  }, [busqueda, pacientes]);
 
   const agregarPacientes = async (datosPaciente) => {
     const pacienteRegistrado = await registrarPaciente(datosPaciente);
@@ -81,6 +95,8 @@ function App() {
       <main>
         <h2>Lista de Pacientes Registrados</h2>
 
+        <BuscadorPaciente texto={busqueda} onCambiar={setBusqueda} />
+
         {cargando && <p className="tabla-vacia">Cargando pacientes…</p>}
 
         {error && (
@@ -90,7 +106,17 @@ function App() {
         )}
 
         {!cargando && !error && (
-          <TablaPacientes pacientes={pacientes} onVerFicha={onVerFicha} />
+          <>
+            <p className="contador-pacientes" aria-live="polite">
+              {pacientesFiltrados.length} de {pacientes.length} pacientes
+            </p>
+
+            {pacientesFiltrados.length === 0 && pacientes.length > 0 ? (
+              <p className="tabla-vacia">No se encontraron pacientes</p>
+            ) : (
+              <TablaPacientes pacientes={pacientesFiltrados} onVerFicha={onVerFicha} />
+            )}
+          </>
         )}
       </main>
 

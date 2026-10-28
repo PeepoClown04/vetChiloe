@@ -3,7 +3,9 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "engines": { "node": ">=22.12.0" },
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -11,6 +13,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "lucide-react": "^1.63.0",
     "motion": "^14.0.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
