@@ -1,12 +1,12 @@
 import { ErrorValidacion, obtenerPacientes, registrarPaciente } from '../services/pacientes.js';
 
-export function listar(req, res) {
-  res.status(200).json(obtenerPacientes());
+export async function listar(req, res) {
+  res.status(200).json(await obtenerPacientes());
 }
 
-export function crear(req, res) {
+export async function crear(req, res) {
   try {
-    res.status(201).json(registrarPaciente(req.body));
+    res.status(201).json(await registrarPaciente(req.body));
   } catch (error) {
     if (error instanceof ErrorValidacion) {
       res.status(400).json({ error: error.message });

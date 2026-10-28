@@ -1,7 +1,10 @@
 import * as repositorio from '../repositories/pacientes.js';
+import {
+  ESPECIES, IMAGEN_MAX_BYTES, IMAGEN_TIPOS,
+  normalizarRut, normalizarTelefono, validarPaciente,
+} from '../domain/validaciones.js';
 
-// Debe coincidir con ESPECIES de src/utils/validaciones.js (formulario).
-export const ESPECIES_VALIDAS = ['Canino', 'Felino', 'Ave', 'Roedor', 'Reptil', 'Otro'];
+export const ESPECIES_VALIDAS = ESPECIES;
 
 export class ErrorValidacion extends Error {
   constructor(mensaje) {
@@ -10,33 +13,44 @@ export class ErrorValidacion extends Error {
   }
 }
 
-const generarNumeroAtencion = () => {
-  const correlativo = repositorio.listar().length + 1;
-  return `${new Date().getFullYear()}-${String(correlativo).padStart(3, '0')}`;
-};
-
-export function obtenerPacientes() {
+export async function obtenerPacientes() {
   return repositorio.listar();
 }
 
-export function registrarPaciente(datos) {
-  const nombre = typeof datos?.nombre === 'string' ? datos.nombre.trim() : '';
-  if (!nombre) {
-    throw new ErrorValidacion('El nombre del paciente es obligatorio.');
+export async function registrarPaciente(datos) {
+  if (!datos || typeof datos !== 'object' || Array.isArray(datos)) {
+    throw new ErrorValidacion('Los datos del paciente deben ser un objeto.');
   }
-
-  const especie = typeof datos?.especie === 'string' ? datos.especie.trim() : '';
-  if (!ESPECIES_VALIDAS.includes(especie)) {
-    throw new ErrorValidacion(
-      `La especie debe ser una de: ${ESPECIES_VALIDAS.join(', ')}. Se recibió: ${datos?.especie ?? 'vacío'}.`,
-    );
+  const errores = validarPaciente(datos);
+  if (Object.keys(errores).length) {
+    throw new ErrorValidacion(Object.values(errores).join(' '));
   }
-
-  // El N° de atención lo emite el servidor, no el cliente.
+  if (datos.diagnostico != null && typeof datos.diagnostico !== 'string') {
+    throw new ErrorValidacion('El diagnóstico debe ser texto.');
+  }
+  if (datos.imagen != null) {
+    const imagen = datos.imagen;
+    const base64 = typeof imagen === 'string'
+      ? imagen.match(/^data:(image\/[a-z]+);base64,([A-Za-z0-9+/]+={0,2})$/)
+      : null;
+    const esURL = typeof imagen === 'string'
+      && ['https:', 'http:'].includes(URL.parse(imagen)?.protocol);
+    if (!esURL && (!base64 || !IMAGEN_TIPOS.includes(base64[1]) || base64[2].length % 4 !== 0)) {
+      throw new ErrorValidacion('La imagen debe ser una URL HTTP(S) o una fotografía JPG, PNG, WEBP, GIF o AVIF en base64.');
+    }
+    if (base64 && Buffer.from(base64[2], 'base64').length > IMAGEN_MAX_BYTES) {
+      throw new ErrorValidacion('La imagen no puede superar 2 MB.');
+    }
+  }
   return repositorio.crear({
-    ...datos,
-    nombre,
-    especie,
-    numero_atencion: generarNumeroAtencion(),
+    nombre: datos.nombre.trim(),
+    especie: datos.especie,
+    peso: Number(datos.peso),
+    edad: Number(datos.edad),
+    dueno: normalizarRut(datos.dueno),
+    telefono: normalizarTelefono(datos.telefono),
+    diagnostico: datos.diagnostico ?? null,
+    ultima_visita: datos.ultima_visita,
+    imagen: datos.imagen ?? null,
   });
 }
